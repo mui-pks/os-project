@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "902446087003",
+    "firebase_url": "https://money-monitor-ee881.firebaseio.com",
+    "project_id": "money-monitor-ee881",
+    "storage_bucket": "money-monitor-ee881.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:902446087003:android:440ae50649398b28bab87e",
+        "android_client_info": {
+          "package_name": "com.example.flutter_complete_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "902446087003-759t0bgfbv41jcjl5j00qm70md8u27m1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxLqV5OkQ6MqAQeOG3ePVz8-9sk8VgC2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "902446087003-759t0bgfbv41jcjl5j00qm70md8u27m1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
