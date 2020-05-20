@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_app/loading.dart';
 import 'package:flutter_complete_app/screens/authenticate/register.dart';
 import 'package:flutter_complete_app/services/auth.dart';
 
@@ -13,6 +14,7 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
+  bool loading = false;
 
   // text field state
   final formKey = new GlobalKey<FormState>();
@@ -30,7 +32,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ? Loading(): Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.blue,
@@ -95,13 +97,14 @@ class _SignInState extends State<SignIn> {
                   ),
                   onPressed: () async {
                     if (_formKey.currentState.validate()) {
-                      print('valid');
+                      setState(()=> loading =true);
                       dynamic result = await _auth.signInWithEmailAndPassword(
                           email, password);
 
                       if (result == null) {
                         setState(() => error =
                             'Could NOT SIGN IN WITH THOSE EMAIL AND PASSWORD');
+                            loading = false;
                       }
                     }
                   }),
