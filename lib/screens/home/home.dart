@@ -1,90 +1,112 @@
+import 'package:flutter_complete_app/model/transaction.dart';
+import 'package:flutter_complete_app/screens/home/chart.dart';
+import 'package:flutter_complete_app/screens/home/new_transaction.dart';
+import 'package:flutter_complete_app/screens/home/transaction_list.dart';
+import 'package:flutter_complete_app/services/auth.dart';
+
+
 import 'package:flutter/material.dart';
 
-//my own imports
-import 'package:flutter_complete_app/services/auth.dart';
-import 'package:flutter_complete_app/screens/home/components.dart';
 
 class Home extends StatefulWidget {
+  //String titleInput;
+  //String amountInput;
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   final AuthService _auth = AuthService();
+
+  final List<Transaction> _usertransactions = [
+    //Transaction(
+    //     id: 't1',
+    //     title:'New shoes',
+    //     amount:69.99,
+    //     date:DateTime.now(),
+    //     ),
+    //     Transaction(
+    //     id: 't2',
+    //     title:'weekly grocery',
+    //    amount:16.53,
+    //     date:DateTime.now(),
+    //     ),
+  ];
+
+  List<Transaction> get _recentTransactions {
+    return _usertransactions.where((tx) {
+      return tx.date.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
+    }).toList();
+  }
+
+  void _addNewTransaction(
+      String txtitle, double txamount, DateTime chosenDate) {
+    final newTx = Transaction(
+      title: txtitle,
+      amount: txamount,
+      date: chosenDate,
+      id: DateTime.now().toString(),
+    );
+    setState(() {
+      _usertransactions.add(newTx);
+    });
+  }
+
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      builder: (_) {
+        return GestureDetector(
+          onTap: () {},
+          child: NewTransaction(_addNewTransaction),
+          behavior: HitTestBehavior.opaque,
+        );
+      },
+    );
+  }
+
+  void _deleteTransaction(String id) {
+    setState(() {
+      _usertransactions.removeWhere((tx) {
+        return tx.id == id;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    
-//    this code is going to give us the width of the screen
-    final mediaQuerydata = MediaQuery.of(context);
-    final size = mediaQuerydata.size.width;
-
     return Scaffold(
       appBar: AppBar(
-        title: new Text("OS Personal Budget App"),
-        backgroundColor: Colors.blue,
-        centerTitle: false,
-        elevation: 1.0,
-        actions: <Widget>[
-          FlatButton.icon(onPressed: () async{await _auth.signOut();}, icon: Icon(Icons.person), label: Text('logout'))
-        ],
-        
-      ),
-      
-
-      body: new Stack(
-        children: <Widget>[
-          Center(
-            child: ListTile(
-              title: new Icon(Icons.account_balance_wallet, size: 64.0, color: Colors.grey,),
-              subtitle: new Padding(padding: EdgeInsets.only(left: size / 2.9),
-                  child: new Text("Spend Wisely!", style: TextStyle(fontSize: 16.0),)),
-            ),
-          )
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(onPressed: (){showDialog(context: context,
-      builder:(context)=>new AlertDialog(
-        title:new Text("Add"),
-        content:new Container(height:200.0,child:AlertComponents(),
+        title: Text(
+          'Personal Expenses',
         ),
-        ));},
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,),
-
-      
-
-
-      bottomNavigationBar: new Container(
-        color: Colors.white,
-        child: Row(
+        actions: <Widget>[
+          FlatButton.icon(
+              onPressed: () async {
+                await _auth.signOut();
+              },
+              icon: Icon(Icons.person),
+              label: Text('logout'))
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          //mainAxisAlignment : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Expanded(
-              child: ListTile(
-                title: new Text("Balance:"),
-                subtitle: new Text(
-                    "\$720",
-                  style: TextStyle(color: Colors.green),
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListTile(
-                title: new Text("Expense:"),
-                subtitle: new Text(
-                  "\$230",
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ),
-            Expanded(
-                child: new IconButton(
-                    icon: Icon(
-                      Icons.remove_red_eye,
-                      color: Colors.lightBlueAccent,
-                    ),
-                    onPressed: () {})),
+            Chart(_recentTransactions),
+            TransactionList(_usertransactions, _deleteTransaction),
           ],
         ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _startAddNewTransaction(context),
+        child: Icon(Icons.add),
       ),
     );
   }
