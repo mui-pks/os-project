@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class NewTransaction extends StatefulWidget {
   final Function addTx;
@@ -14,6 +16,7 @@ class _NewTransactionState extends State<NewTransaction> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   DateTime _selectedDate;
+  FirebaseUser user;
 
   void _submitData() {
     if (_amountController.text.isEmpty) {
@@ -25,11 +28,7 @@ class _NewTransactionState extends State<NewTransaction> {
       return;
     }
 
-    widget.addTx(
-      enteredTitle,
-      enteredAmount,
-      _selectedDate,
-    );
+    widget.addTx(enteredTitle, enteredAmount, _selectedDate);
 
     Navigator.of(context).pop();
   }
@@ -53,6 +52,7 @@ class _NewTransactionState extends State<NewTransaction> {
 
   @override
   Widget build(BuildContext context) {
+    user = Provider.of(context);
     return Card(
       elevation: 5,
       child: Container(

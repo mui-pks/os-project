@@ -22,12 +22,12 @@ class TransactionList extends StatelessWidget {
                 SizedBox(
                   height: 8,
                 ),
-                Container(
-                    height: 250,
-                    child: Image.asset(
-                      'assets/images/waiting.png',
-                      fit: BoxFit.cover,
-                    )),
+                // Container(
+                //     height: 250,
+                //     child: Image.asset(
+                //       'assets/images/waiting.png',
+                //       fit: BoxFit.cover,
+                //     )),
               ],
             )
           : ListView.builder(

@@ -1,18 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_complete_app/model/user.dart';
 
+import 'database.dart';
+
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
   //create user object based on firebaseoUser
   User _userFromFirebaseUser(FirebaseUser user) {
     return user != null ? User(uid: user.uid) : null;
   }
 
   //auth change user stream
-  Stream<User> get user {
-    return _auth.onAuthStateChanged
-        // .map((FirebaseUser user) => _userFromFirebaseUser(user));
-        .map(_userFromFirebaseUser);
+  static Stream<FirebaseUser> get user {
+    return _auth.onAuthStateChanged;
+    // .map((FirebaseUser user) => _userFromFirebaseUser(user));
   }
 
   //sign in anom
@@ -46,6 +47,7 @@ class AuthService {
       AuthResult result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser user = result.user;
+      DatabaseService(uid: user.uid).registerUser();
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
