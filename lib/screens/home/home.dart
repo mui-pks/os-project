@@ -4,9 +4,7 @@ import 'package:flutter_complete_app/screens/home/new_transaction.dart';
 import 'package:flutter_complete_app/screens/home/transaction_list.dart';
 import 'package:flutter_complete_app/services/auth.dart';
 
-
 import 'package:flutter/material.dart';
-
 
 class Home extends StatefulWidget {
   //String titleInput;
