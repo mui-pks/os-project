@@ -6,6 +6,8 @@ import 'package:flutter_complete_app/screens/home/transaction_list.dart';
 import 'package:flutter_complete_app/services/auth.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/transaction.dart';
@@ -90,6 +92,41 @@ class _HomeState extends State<Home> {
     DatabaseService(uid: user.uid).deleteTransaction(id: id);
   }
 
+  List<Transaction> userTransactions = [];
+
+  Future fetchFromSMS() async {
+    SmsQuery query = SmsQuery();
+    List<SmsMessage> messageList =
+        await query.querySms(kinds: [SmsQueryKind.Inbox]);
+    // int count = 0;
+    for (var message in messageList) {
+      if (RegExp(r"^Acct").hasMatch(message.body)) {
+        var date = message.date;
+        RegExp filterForAmount =
+            RegExp(r" debited with INR( )?((\d)+((,)?(\d)+)?.\d\d)");
+        RegExp filterForTitle = RegExp(r" and (\S*)");
+        String title;
+        try {
+          title = filterForTitle.firstMatch(message.body).group(1);
+        } catch (e) {
+          title = message.address;
+        }
+        var amountInString = filterForAmount.firstMatch(message.body).group(2);
+        var amount =
+            NumberFormat.decimalPattern().parse(amountInString).toDouble();
+        var id = message.dateSent.toString();
+        Transaction newTransactionObject =
+            Transaction(amount: amount, title: title, date: date, id: id);
+        print(amount);
+        userTransactions.add(newTransactionObject);
+      }
+      // count += 1;
+      // if (count == 10) return true;
+      // print(count);
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     user = Provider.of(context);
@@ -108,13 +145,54 @@ class _HomeState extends State<Home> {
         ],
       ),
       body: SingleChildScrollView(
-          child: StreamBuilder(
+          child: FutureBuilder(
+              future: fetchFromSMS(),
+              builder: (context, snapshotfromSMS) {
+                if (snapshotfromSMS.hasData) {
+                  return StreamBuilder(
+                      stream: DatabaseService(uid: user.uid)
+                          .allTransactionsAsStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          List<Transaction> downloadedUserTransactions =
+                              parseJSONintoTransactionObject(
+                                  snapshot.data["transactions"]);
+                          userTransactions.addAll(downloadedUserTransactions);
+                          return Column(
+                            //mainAxisAlignment : MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              Chart(_recentTransactions(userTransactions)),
+                              TransactionList(
+                                  userTransactions, _deleteTransaction),
+                            ],
+                          );
+                        } else if (snapshot.hasError) {}
+                        return CircularProgressIndicator();
+                      });
+                } else if (snapshotfromSMS.hasError) {
+                  return Text("Error ${snapshotfromSMS.error}");
+                }
+                return CircularProgressIndicator();
+              })),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _startAddNewTransaction(context),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+/*
+StreamBuilder(
               stream: DatabaseService(uid: user.uid).allTransactionsAsStream,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Transaction> userTransactions =
+                  List<Transaction> downloadedUserTransactions =
                       parseJSONintoTransactionObject(
                           snapshot.data["transactions"]);
+                  userTransactions.addAll(downloadedUserTransactions);
                   // print(snapshot.data.toString());
                   // if (snapshot.data != null)
                   //   for (var transaction in snapshot.data["transactions"]) {
@@ -140,23 +218,5 @@ class _HomeState extends State<Home> {
                   );
                 } else if (snapshot.hasError) {}
                 return CircularProgressIndicator();
-              })),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _startAddNewTransaction(context),
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-/*
-Column(
-          //mainAxisAlignment : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Chart(_recentTransactions(_usertransactions)),
-            TransactionList(_usertransactions, _deleteTransaction),
-          ],
-        ),
+              })
 */
