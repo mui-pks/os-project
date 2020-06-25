@@ -92,7 +92,7 @@ class _HomeState extends State<Home> {
     DatabaseService(uid: user.uid).deleteTransaction(id: id);
   }
 
-  List<Transaction> userTransactions = [];
+  List<Transaction> userTransactionsFromSMS = [];
 
   Future fetchFromSMS() async {
     SmsQuery query = SmsQuery();
@@ -118,7 +118,7 @@ class _HomeState extends State<Home> {
         Transaction newTransactionObject =
             Transaction(amount: amount, title: title, date: date, id: id);
         print(amount);
-        userTransactions.add(newTransactionObject);
+        userTransactionsFromSMS.add(newTransactionObject);
       }
       // count += 1;
       // if (count == 10) return true;
@@ -154,10 +154,13 @@ class _HomeState extends State<Home> {
                           .allTransactionsAsStream,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
+                          List<Transaction> userTransactions = [];
                           List<Transaction> downloadedUserTransactions =
                               parseJSONintoTransactionObject(
                                   snapshot.data["transactions"]);
-                          userTransactions.addAll(downloadedUserTransactions);
+                          userTransactions
+                              .addAll(downloadedUserTransactions.reversed);
+                          userTransactions.addAll(userTransactionsFromSMS);
                           return Column(
                             //mainAxisAlignment : MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
